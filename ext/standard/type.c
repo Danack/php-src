@@ -444,3 +444,32 @@ PHP_FUNCTION(is_countable)
 	RETURN_BOOL(zend_is_countable(var));
 }
 /* }}} */
+
+
+
+/* {{{ Returns true if value is a literal  */
+PHP_FUNCTION(is_literal)
+{
+	zval *arg;
+
+	ZEND_PARSE_PARAMETERS_START(1, 1)
+		Z_PARAM_ZVAL(arg)
+	ZEND_PARSE_PARAMETERS_END();
+
+	switch (Z_TYPE_P(arg)) {
+		case IS_LONG:
+		case IS_DOUBLE:
+		case IS_STRING:
+			if (Z_IS_LITERAL_P(arg)) {
+				RETURN_TRUE;
+			} else {
+				RETURN_FALSE;
+			}
+			break;
+
+		default:
+			RETURN_FALSE;
+			break;
+	}
+}
+/* }}} */

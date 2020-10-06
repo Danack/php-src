@@ -673,6 +673,7 @@ static zend_always_inline uint32_t zval_gc_info(uint32_t gc_type_info) {
 /* zval.u1.v.type_flags */
 #define IS_TYPE_REFCOUNTED			(1<<0)
 #define IS_TYPE_COLLECTABLE			(1<<1)
+#define IS_LITERAL					(1<<2)
 
 #if 1
 /* This optimized version assumes that we have a single "type_flag" */
@@ -681,6 +682,10 @@ static zend_always_inline uint32_t zval_gc_info(uint32_t gc_type_info) {
 #else
 # define Z_TYPE_INFO_REFCOUNTED(t)	(((t) & (IS_TYPE_REFCOUNTED << Z_TYPE_FLAGS_SHIFT)) != 0)
 #endif
+
+#define Z_TYPE_INFO_IS_LITERAL(t) (((t) & (IS_LITERAL << Z_TYPE_FLAGS_SHIFT)) != 0)
+#define Z_IS_LITERAL_P(zval_p) (Z_TYPE_INFO_IS_LITERAL(Z_TYPE_INFO(*(zval_p))) != 0)
+
 
 /* extended types */
 #define IS_INTERNED_STRING_EX		IS_STRING
@@ -1234,6 +1239,16 @@ static zend_always_inline uint32_t zval_delref_p(zval* pz) {
 		uint32_t _t = Z_TYPE_INFO_P(_z2);				\
 		ZVAL_COPY_VALUE_EX(_z1, _z2, _gc, _t);			\
 	} while (0)
+
+#define ZVAL_COPY_VALUE_LITERAL(z, v)							\
+	do {												\
+		zval *_z1 = (z);								\
+		const zval *_z2 = (v);							\
+		zend_refcounted *_gc = Z_COUNTED_P(_z2);		\
+		uint32_t _t = Z_TYPE_INFO_P(_z2) | (IS_LITERAL << Z_TYPE_FLAGS_SHIFT); 				\
+		ZVAL_COPY_VALUE_EX(_z1, _z2, _gc, _t);			\
+	} while (0)
+
 
 #define ZVAL_COPY(z, v)									\
 	do {												\

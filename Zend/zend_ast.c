@@ -62,7 +62,7 @@ static zend_always_inline zend_ast * zend_ast_create_zval_int(zval *zv, uint32_t
 	ast = zend_ast_alloc(sizeof(zend_ast_zval));
 	ast->kind = ZEND_AST_ZVAL;
 	ast->attr = attr;
-	ZVAL_COPY_VALUE(&ast->val, zv);
+	ZVAL_COPY_VALUE_LITERAL(&ast->val, zv);
 	Z_LINENO(ast->val) = lineno;
 	return (zend_ast *) ast;
 }
