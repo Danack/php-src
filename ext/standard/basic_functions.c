@@ -2742,7 +2742,7 @@ static int check_is_literal_int_or_bool(zval *piece, int position)
 		zend_throw_exception_ex(
 				zend_ce_type_error,
 				0,
-				"Only literal strings, ints, bools allowed. Found at position, %d bad type",
+				"Only literal strings, ints, bools allowed. Found bad type at position %d ",
 				position
 		);
 		return -1;
@@ -2811,24 +2811,25 @@ PHP_FUNCTION(literal_implode)
 		Z_PARAM_ARRAY(pieces)
 	ZEND_PARSE_PARAMETERS_END();
 
+// TODO - need macro for inspecting zend_string->refcounted
+//	if(!Z_IS_LITERAL(*glue)) {
+//		zend_throw_exception_ex(
+//			zend_ce_type_error,
+//			0,
+//			"Non-literal string found at position, %d",
+//			position
+//		);
+//		RETURN_THROWS();
+//	}
+
 	ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(pieces), piece) {
 		ok = check_is_literal_int_or_bool(piece, position);
-		if (!ok) {
+		if (ok != 0) {
 			// Exception is set inside check_is_literal_int_or_bool
 			RETURN_THROWS();
 		}
 		position += 1;
 	} ZEND_HASH_FOREACH_END();
-
-	// This does nothing ?
-	zend_hash_internal_pointer_reset(Z_ARRVAL_P(pieces));
-
-//	position += 0;
-//
-//	ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(pieces), piece) {
-//		printf("After loop: %d", position);
-//		position += 1;
-//	} ZEND_HASH_FOREACH_END();
 
 	php_implode(glue, Z_ARRVAL_P(pieces), return_value);
 	Z_SET_IS_LITERAL_P(return_value);
