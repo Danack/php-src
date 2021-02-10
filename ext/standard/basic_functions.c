@@ -49,6 +49,7 @@ typedef struct yy_buffer_state *YY_BUFFER_STATE;
 #include <zend_language_parser.h>
 
 #include "zend_portability.h"
+#include <zend_types.h>
 
 #include <stdarg.h>
 #include <stdlib.h>
@@ -2707,3 +2708,123 @@ PHP_FUNCTION(sys_getloadavg)
 }
 /* }}} */
 #endif
+
+
+/* {{{ */
+PHP_FUNCTION(literal_set)
+{
+	zval *string;
+	// TODO - delete this. Just for debugging.
+
+
+	ZEND_PARSE_PARAMETERS_START(1, 1)
+		Z_PARAM_ZVAL(string)
+	ZEND_PARSE_PARAMETERS_END();
+
+	Z_SET_IS_LITERAL_P(string);
+}
+/* }}} */
+
+
+static int check_is_literalish(zval *piece, int position)
+{
+	if (Z_TYPE_P(piece) == IS_FALSE || Z_TYPE_P(piece) == IS_TRUE) {
+		return 0;
+	}
+
+	if (Z_TYPE_P(piece) == IS_LONG) {
+		return 0;
+	}
+
+//		if (Z_TYPE_P(piece) != IS_STRING) {
+//			zend_throw_exception_ex(
+//					spl_ce_InvalidArgumentException,
+//					0,
+//					"Only literal strings, ints, bools allowed. Found at piece, %d bad type",
+//					position
+//			);
+//		}
+
+//		if(!Z_IS_LITERAL(*piece)) {
+//			zend_throw_exception_ex(
+//				spl_ce_InvalidArgumentException,
+//				0,
+//				"Non-literal, int, bool found at piece, %d cannot be found",
+//				position
+//			);
+//			RETURN_THROWS();
+//		}
+
+	return 0;
+}
+
+/* {{{ */
+PHP_FUNCTION(literal_combine)
+{
+//	zval *piece;
+	zval *piece;
+	HashTable *pieces;
+	zval pieces_all;
+
+	int position = 0;
+	int ok;
+
+	array_init(&pieces_all);
+
+
+
+
+	ZEND_PARSE_PARAMETERS_START(2, 2)
+//		Z_PARAM_STR(piece)
+		Z_PARAM_ZVAL(piece)
+		Z_PARAM_ARRAY_HT(pieces)
+	ZEND_PARSE_PARAMETERS_END();
+
+	add_next_index_zval(piece, &pieces_all);
+
+	ZEND_HASH_FOREACH_VAL(pieces, piece) {
+		ok = check_is_literalish(piece, position);
+		if (!ok) {
+			// Exception is set inside check_is_literalish
+			RETURN_THROWS();
+  		}
+  		position += 1;
+  		add_next_index_zval(piece, &pieces_all);
+	} ZEND_HASH_FOREACH_END();
+
+	zend_string *glue = zend_string_init("", sizeof("") - 1, 1);
+	php_implode(glue, Z_ARRVAL(pieces_all), return_value);
+}
+/* }}} */
+
+
+/* {{{ */
+PHP_FUNCTION(literal_implode)
+{
+	HashTable *pieces;
+	zval *piece;
+
+	zend_string *glue = NULL;
+	int position = 0;
+	int ok;
+
+	ZEND_PARSE_PARAMETERS_START(2, 2)
+		Z_PARAM_STR(glue)
+		Z_PARAM_ARRAY_HT(pieces)
+	ZEND_PARSE_PARAMETERS_END();
+
+	ZEND_HASH_FOREACH_VAL(pieces, piece) {
+		ok = check_is_literalish(piece, position);
+		if (!ok) {
+			// Exception is set inside check_is_literalish
+			RETURN_THROWS();
+		}
+		position += 1;
+
+	} ZEND_HASH_FOREACH_END();
+
+	php_implode(glue, pieces, return_value);
+}
+/* }}} */
+
+

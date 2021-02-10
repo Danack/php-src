@@ -1,5 +1,5 @@
 /* This is a generated file, edit the .stub.php file instead.
- * Stub hash: 7540039937587f05584660bc1a1a8a80aa5ccbd1 */
+ * Stub hash: a5270a2c42379d5c34c8355ab769bb0c8685a998 */
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_set_time_limit, 0, 1, _IS_BOOL, 0)
 	ZEND_ARG_TYPE_INFO(0, seconds, IS_LONG, 0)
@@ -584,6 +584,20 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_MASK_EX(arginfo_sys_getloadavg, 0, 0, MAY_BE_ARRAY|MAY_BE_FALSE)
 ZEND_END_ARG_INFO()
 #endif
+
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_literal_set, 0, 1, IS_VOID, 0)
+	ZEND_ARG_TYPE_INFO(0, string, IS_STRING, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_literal_implode, 0, 2, IS_STRING, 0)
+	ZEND_ARG_TYPE_INFO(0, glue, IS_STRING, 0)
+	ZEND_ARG_TYPE_INFO(0, pieces, IS_ARRAY, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_literal_combine, 0, 1, IS_STRING, 0)
+	ZEND_ARG_TYPE_INFO(0, piece, IS_STRING, 0)
+	ZEND_ARG_VARIADIC_TYPE_INFO(0, pieces, IS_STRING, 0)
+ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_MASK_EX(arginfo_get_browser, 0, 0, MAY_BE_OBJECT|MAY_BE_ARRAY|MAY_BE_FALSE)
 	ZEND_ARG_TYPE_INFO_WITH_DEFAULT_VALUE(0, user_agent, IS_STRING, 1, "null")
@@ -2072,6 +2086,10 @@ ZEND_END_ARG_INFO()
 
 #define arginfo_is_double arginfo_boolval
 
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_is_literal, 0, 1, _IS_BOOL, 0)
+	ZEND_ARG_TYPE_INFO(0, value, IS_STRING, 0)
+ZEND_END_ARG_INFO()
+
 #define arginfo_is_numeric arginfo_boolval
 
 #define arginfo_is_string arginfo_boolval
@@ -2380,6 +2398,9 @@ ZEND_FUNCTION(config_get_hash);
 #if defined(HAVE_GETLOADAVG)
 ZEND_FUNCTION(sys_getloadavg);
 #endif
+ZEND_FUNCTION(literal_set);
+ZEND_FUNCTION(literal_implode);
+ZEND_FUNCTION(literal_combine);
 ZEND_FUNCTION(get_browser);
 ZEND_FUNCTION(crc32);
 ZEND_FUNCTION(crypt);
@@ -2783,6 +2804,7 @@ ZEND_FUNCTION(is_resource);
 ZEND_FUNCTION(is_bool);
 ZEND_FUNCTION(is_int);
 ZEND_FUNCTION(is_float);
+ZEND_FUNCTION(is_literal);
 ZEND_FUNCTION(is_numeric);
 ZEND_FUNCTION(is_string);
 ZEND_FUNCTION(is_array);
@@ -3007,6 +3029,9 @@ static const zend_function_entry ext_functions[] = {
 #if defined(HAVE_GETLOADAVG)
 	ZEND_FE(sys_getloadavg, arginfo_sys_getloadavg)
 #endif
+	ZEND_FE(literal_set, arginfo_literal_set)
+	ZEND_FE(literal_implode, arginfo_literal_implode)
+	ZEND_FE(literal_combine, arginfo_literal_combine)
 	ZEND_FE(get_browser, arginfo_get_browser)
 	ZEND_FE(crc32, arginfo_crc32)
 	ZEND_FE(crypt, arginfo_crypt)
@@ -3435,6 +3460,7 @@ static const zend_function_entry ext_functions[] = {
 	ZEND_FALIAS(is_long, is_int, arginfo_is_long)
 	ZEND_FE(is_float, arginfo_is_float)
 	ZEND_FALIAS(is_double, is_float, arginfo_is_double)
+	ZEND_FE(is_literal, arginfo_is_literal)
 	ZEND_FE(is_numeric, arginfo_is_numeric)
 	ZEND_FE(is_string, arginfo_is_string)
 	ZEND_FE(is_array, arginfo_is_array)

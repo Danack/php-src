@@ -373,6 +373,12 @@ function config_get_hash(): array {}
 function sys_getloadavg(): array|false {}
 #endif
 
+function literal_set(string $string): void{}
+
+function literal_implode(string $glue, array $pieces): string {}
+
+function literal_combine(string $piece, string ...$pieces): string {}
+
 /* browscap.c */
 
 function get_browser(?string $user_agent = null, bool $return_array = false): object|array|false {}
@@ -1403,6 +1409,8 @@ function is_float(mixed $value): bool {}
 
 /** @alias is_float */
 function is_double(mixed $value): bool {}
+
+function is_literal(string $value): bool {}
 
 function is_numeric(mixed $value): bool {}
 

@@ -82,6 +82,9 @@ ZEND_API zend_ast * ZEND_FASTCALL zend_ast_create_zval(zval *zv) {
 ZEND_API zend_ast * ZEND_FASTCALL zend_ast_create_zval_from_str(zend_string *str) {
 	zval zv;
 	ZVAL_STR(&zv, str);
+	// This doesn't appear to do anything
+//	Z_SET_IS_LITERAL(zv);
+
 	return zend_ast_create_zval_int(&zv, 0, CG(zend_lineno));
 }
 

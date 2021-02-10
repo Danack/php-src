@@ -9585,9 +9585,18 @@ static void zend_compile_expr_inner(znode *result, zend_ast *ast) /* {{{ */
 		return;
 	}
 
+	zval *zval_dja;
+
 	switch (ast->kind) {
 		case ZEND_AST_ZVAL:
-			ZVAL_COPY(&result->u.constant, zend_ast_get_zval(ast));
+			zval_dja = zend_ast_get_zval(ast);
+
+			if (Z_TYPE_P(zval_dja) == IS_STRING) {
+//				printf("This is literal p.\n");
+				Z_SET_IS_LITERAL_P(zval_dja);
+			}
+
+			ZVAL_COPY(&result->u.constant, zval_dja);
 			result->op_type = IS_CONST;
 			return;
 		case ZEND_AST_ZNODE:
