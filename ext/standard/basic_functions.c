@@ -2716,17 +2716,19 @@ PHP_FUNCTION(literal_set)
 	zval *string;
 	// TODO - delete this. Just for debugging.
 
-
 	ZEND_PARSE_PARAMETERS_START(1, 1)
 		Z_PARAM_ZVAL(string)
 	ZEND_PARSE_PARAMETERS_END();
+
+	// TODO - check string is actually a string...
+	//	zend_string *str = Z_STR_P(entry);
 
 	Z_SET_IS_LITERAL_P(string);
 }
 /* }}} */
 
 
-static int check_is_literalish(zval *piece, int position)
+static int check_is_literal_int_or_bool(zval *piece, int position)
 {
 	if (Z_TYPE_P(piece) == IS_FALSE || Z_TYPE_P(piece) == IS_TRUE) {
 		return 0;
@@ -2736,24 +2738,25 @@ static int check_is_literalish(zval *piece, int position)
 		return 0;
 	}
 
-//		if (Z_TYPE_P(piece) != IS_STRING) {
-//			zend_throw_exception_ex(
-//					spl_ce_InvalidArgumentException,
-//					0,
-//					"Only literal strings, ints, bools allowed. Found at piece, %d bad type",
-//					position
-//			);
-//		}
+	if (Z_TYPE_P(piece) != IS_STRING) {
+		zend_throw_exception_ex(
+				zend_ce_type_error,
+				0,
+				"Only literal strings, ints, bools allowed. Found at position, %d bad type",
+				position
+		);
+		return -1;
+	}
 
-//		if(!Z_IS_LITERAL(*piece)) {
-//			zend_throw_exception_ex(
-//				spl_ce_InvalidArgumentException,
-//				0,
-//				"Non-literal, int, bool found at piece, %d cannot be found",
-//				position
-//			);
-//			RETURN_THROWS();
-//		}
+	if(!Z_IS_LITERAL(*piece)) {
+		zend_throw_exception_ex(
+			zend_ce_type_error,
+			0,
+			"Non-literal string found at position, %d",
+			position
+		);
+		return -1;
+	}
 
 	return 0;
 }
@@ -2761,39 +2764,35 @@ static int check_is_literalish(zval *piece, int position)
 /* {{{ */
 PHP_FUNCTION(literal_combine)
 {
-//	zval *piece;
 	zval *piece;
-	HashTable *pieces;
-	zval pieces_all;
+	zval *pieces;
+	int pieces_count = -1;
 
+	zval pieces_all;
 	int position = 0;
 	int ok;
 
 	array_init(&pieces_all);
 
-
-
-
-	ZEND_PARSE_PARAMETERS_START(2, 2)
-//		Z_PARAM_STR(piece)
+	ZEND_PARSE_PARAMETERS_START(1, -1)
 		Z_PARAM_ZVAL(piece)
-		Z_PARAM_ARRAY_HT(pieces)
+		Z_PARAM_VARIADIC('+', pieces, pieces_count)
 	ZEND_PARSE_PARAMETERS_END();
 
-	add_next_index_zval(piece, &pieces_all);
+	add_next_index_zval(&pieces_all, piece);
 
-	ZEND_HASH_FOREACH_VAL(pieces, piece) {
-		ok = check_is_literalish(piece, position);
-		if (!ok) {
-			// Exception is set inside check_is_literalish
+	for (position = 0; position < pieces_count; position++) {
+		ok = check_is_literal_int_or_bool(&pieces[position], position);
+		if (ok != 0) {
+			// Exception is set inside check_is_literal_int_or_bool
 			RETURN_THROWS();
-  		}
-  		position += 1;
-  		add_next_index_zval(piece, &pieces_all);
-	} ZEND_HASH_FOREACH_END();
+		}
+		add_next_index_zval(&pieces_all, &pieces[position]);
+	}
 
-	zend_string *glue = zend_string_init("", sizeof("") - 1, 1);
+	zend_string *glue = zend_string_init("", sizeof("") - 1, 0);
 	php_implode(glue, Z_ARRVAL(pieces_all), return_value);
+	Z_SET_IS_LITERAL_P(return_value);
 }
 /* }}} */
 
@@ -2801,29 +2800,38 @@ PHP_FUNCTION(literal_combine)
 /* {{{ */
 PHP_FUNCTION(literal_implode)
 {
-	HashTable *pieces;
+	zval *pieces;
 	zval *piece;
-
 	zend_string *glue = NULL;
 	int position = 0;
 	int ok;
 
 	ZEND_PARSE_PARAMETERS_START(2, 2)
 		Z_PARAM_STR(glue)
-		Z_PARAM_ARRAY_HT(pieces)
+		Z_PARAM_ARRAY(pieces)
 	ZEND_PARSE_PARAMETERS_END();
 
-	ZEND_HASH_FOREACH_VAL(pieces, piece) {
-		ok = check_is_literalish(piece, position);
+	ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(pieces), piece) {
+		ok = check_is_literal_int_or_bool(piece, position);
 		if (!ok) {
-			// Exception is set inside check_is_literalish
+			// Exception is set inside check_is_literal_int_or_bool
 			RETURN_THROWS();
 		}
 		position += 1;
-
 	} ZEND_HASH_FOREACH_END();
 
-	php_implode(glue, pieces, return_value);
+	// This does nothing ?
+	zend_hash_internal_pointer_reset(Z_ARRVAL_P(pieces));
+
+//	position += 0;
+//
+//	ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(pieces), piece) {
+//		printf("After loop: %d", position);
+//		position += 1;
+//	} ZEND_HASH_FOREACH_END();
+
+	php_implode(glue, Z_ARRVAL_P(pieces), return_value);
+	Z_SET_IS_LITERAL_P(return_value);
 }
 /* }}} */
 
