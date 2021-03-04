@@ -42,8 +42,8 @@ catch (TypeError $e) {
 echo "Done\n";
 
 ?>
---EXPECT--
+--EXPECTF--
 Result of literal_combine is correctly a literal.
 Non-literal string found at position, 1
-Only literal strings, ints, bools allowed. Found at position, 1 bad type
+Only literal strings and ints allowed. Found bad type at position %d
 Done

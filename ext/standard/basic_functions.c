@@ -2728,12 +2728,8 @@ PHP_FUNCTION(literal_set)
 /* }}} */
 
 
-static int check_is_literal_int_or_bool(zval *piece, int position)
+static int check_is_literal_or_int(zval *piece, int position)
 {
-	if (Z_TYPE_P(piece) == IS_FALSE || Z_TYPE_P(piece) == IS_TRUE) {
-		return 0;
-	}
-
 	if (Z_TYPE_P(piece) == IS_LONG) {
 		return 0;
 	}
@@ -2742,7 +2738,7 @@ static int check_is_literal_int_or_bool(zval *piece, int position)
 		zend_throw_exception_ex(
 				zend_ce_type_error,
 				0,
-				"Only literal strings, ints, bools allowed. Found bad type at position %d ",
+				"Only literal strings and ints allowed. Found bad type at position %d",
 				position
 		);
 		return -1;
@@ -2752,7 +2748,7 @@ static int check_is_literal_int_or_bool(zval *piece, int position)
 		zend_throw_exception_ex(
 			zend_ce_type_error,
 			0,
-			"Non-literal string found at position, %d",
+			"Non-literal string found at position %d",
 			position
 		);
 		return -1;
@@ -2782,7 +2778,7 @@ PHP_FUNCTION(literal_combine)
 	add_next_index_zval(&pieces_all, piece);
 
 	for (position = 0; position < pieces_count; position++) {
-		ok = check_is_literal_int_or_bool(&pieces[position], position);
+		ok = check_is_literal_or_int(&pieces[position], position);
 		if (ok != 0) {
 			// Exception is set inside check_is_literal_int_or_bool
 			RETURN_THROWS();
@@ -2823,7 +2819,7 @@ PHP_FUNCTION(literal_implode)
 //	}
 
 	ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(pieces), piece) {
-		ok = check_is_literal_int_or_bool(piece, position);
+		ok = check_is_literal_or_int(piece, position);
 		if (ok != 0) {
 			// Exception is set inside check_is_literal_int_or_bool
 			RETURN_THROWS();

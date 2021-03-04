@@ -22,10 +22,34 @@ else {
     echo "imploded string is NOT literal\n";
 }
 
+$non_literal_string = 'Foo' . strlen(__FILE__);
+
+try {
+    $result = literal_implode($non_literal_string, $pieces);
+    echo "literal_implode failed to throw exception for non-literal glue.";
+}
+catch(TypeError $e) {
+    echo $e->getMessage(), "\n";
+}
+
+
+$pieces = [$question_mark, $non_literal_string, $question_mark];
+
+try {
+    $result = literal_implode($glue, $pieces);
+    echo "literal_implode failed to throw exception for non-literal piece.";
+}
+catch(TypeError $e) {
+    echo $e->getMessage(), "\n";
+}
+
+
 echo "Done\n";
 
 ?>
---EXPECT--
+--EXPECTF--
 combined string: '?, ?, ?'
 imploded string is correctly literal
+glue must be literal string or int
+Only literal strings and ints allowed. Found bad type at position %d
 Done

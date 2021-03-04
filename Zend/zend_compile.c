@@ -9587,6 +9587,8 @@ static void zend_compile_expr_inner(znode *result, zend_ast *ast) /* {{{ */
 
 	zval *zval_dja;
 
+	printf("ast->kind %d\n", ast->kind);
+
 	switch (ast->kind) {
 		case ZEND_AST_ZVAL:
 			zval_dja = zend_ast_get_zval(ast);
